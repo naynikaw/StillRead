@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import {
     Article,
     listArticles,
@@ -10,8 +11,27 @@ import {
     getMostRecentInProgress,
     subscribeToArticles,
 } from '@/lib/storage';
+import { useAuth } from '@/lib/auth-context';
 
 export default function Home() {
+    const { user, loading: authLoading, signOut } = useAuth();
+    const router = useRouter();
+
+    // Redirect to auth if not signed in
+    useEffect(() => {
+        if (!authLoading && !user) {
+            router.push('/auth');
+        }
+    }, [user, authLoading, router]);
+
+    // Show nothing while checking auth
+    if (authLoading || !user) {
+        return (
+            <div className="auth-loading">
+                <div className="reader-loading-spinner" />
+            </div>
+        );
+    }
     const [articles, setArticles] = useState<Article[]>([]);
     const [resumeArticle, setResumeArticle] = useState<Article | null>(null);
     const [activeArticle, setActiveArticle] = useState<Article | null>(null);
@@ -214,7 +234,10 @@ export default function Home() {
                         <div className="sidebar-logo-icon">📚</div>
                         <span className="sidebar-logo-text">StillRead</span>
                     </div>
-                    <div className="sidebar-subtitle">Your reading list</div>
+                    <div className="sidebar-user-row">
+                        <span className="sidebar-user-email">{user.email}</span>
+                        <button className="sidebar-signout" onClick={() => signOut()} title="Sign out">↗</button>
+                    </div>
                 </div>
 
                 <div className="sidebar-content">
