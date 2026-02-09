@@ -58,6 +58,10 @@ export async function getArticle(id: string): Promise<Article | null> {
 }
 
 export async function addArticle(url: string, title: string, favicon: string): Promise<Article | null> {
+    // Get the current user's ID for RLS
+    const { data: { session } } = await supabase.auth.getSession();
+    const userId = session?.user?.id;
+
     const { data, error } = await supabase
         .from('articles')
         .insert({
@@ -68,6 +72,7 @@ export async function addArticle(url: string, title: string, favicon: string): P
             completion_status: 'unread',
             last_updated_at: new Date().toISOString(),
             created_at: new Date().toISOString(),
+            user_id: userId,
         })
         .select()
         .single();
