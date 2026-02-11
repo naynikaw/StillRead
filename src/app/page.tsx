@@ -183,13 +183,21 @@ export default function Home() {
     // Delete article
     const handleDelete = async (e: React.MouseEvent, id: string) => {
         e.stopPropagation();
-        await deleteArticle(id);
-        // Real-time subscription will update the list
-        if (activeArticle?.id === id) {
-            setActiveArticle(null);
-            setScrollPercent(0);
+        const success = await deleteArticle(id);
+        if (success) {
+            // Manually refresh list (don't rely solely on real-time subscription)
+            const updated = await listArticles();
+            setArticles(updated);
+            const recent = await getMostRecentInProgress();
+            setResumeArticle(recent);
+            if (activeArticle?.id === id) {
+                setActiveArticle(null);
+                setScrollPercent(0);
+            }
+            showToast('🗑️ Article removed');
+        } else {
+            showToast('❌ Failed to delete article');
         }
-        showToast('🗑️ Article removed');
     };
 
     // Request notification permission
