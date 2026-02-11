@@ -17,21 +17,7 @@ export default function Home() {
     const { user, loading: authLoading, signOut } = useAuth();
     const router = useRouter();
 
-    // Redirect to auth if not signed in
-    useEffect(() => {
-        if (!authLoading && !user) {
-            router.push('/auth');
-        }
-    }, [user, authLoading, router]);
-
-    // Show nothing while checking auth
-    if (authLoading || !user) {
-        return (
-            <div className="auth-loading">
-                <div className="reader-loading-spinner" />
-            </div>
-        );
-    }
+    // ALL hooks must be declared before any conditional returns (React rules of hooks)
     const [articles, setArticles] = useState<Article[]>([]);
     const [resumeArticle, setResumeArticle] = useState<Article | null>(null);
     const [activeArticle, setActiveArticle] = useState<Article | null>(null);
@@ -45,6 +31,13 @@ export default function Home() {
     const [isMobile, setIsMobile] = useState(false);
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const toastTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+    // Redirect to auth if not signed in
+    useEffect(() => {
+        if (!authLoading && !user) {
+            router.push('/auth');
+        }
+    }, [user, authLoading, router]);
 
     // Check mobile
     useEffect(() => {
@@ -219,6 +212,15 @@ export default function Home() {
         }
     };
 
+    // Show nothing while checking auth (must come after all hooks)
+    if (authLoading || !user) {
+        return (
+            <div className="auth-loading">
+                <div className="reader-loading-spinner" />
+            </div>
+        );
+    }
+
     return (
         <div className="app-shell">
             {/* Sidebar overlay for mobile */}
@@ -235,7 +237,7 @@ export default function Home() {
                         <span className="sidebar-logo-text">StillRead</span>
                     </div>
                     <div className="sidebar-user-row">
-                        <span className="sidebar-user-email">{user.email}</span>
+                        <span className="sidebar-user-email">{user?.email ?? ''}</span>
                         <button className="sidebar-signout" onClick={() => signOut()} title="Sign out">↗</button>
                     </div>
                 </div>
